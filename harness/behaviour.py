@@ -55,9 +55,16 @@ def run_suite(cfg: dict, root: Path | None = None) -> list[ScenarioResult]:
         # whatever venv the harness runs under (no reliance on PATH).
         subprocess.run(
             [
-                sys.executable, "-m", "behave", features_dir,
-                "--format", "json", "--outfile", out_path,
-                "--no-summary", "--no-snippets",
+                sys.executable,
+                "-m",
+                "behave",
+                features_dir,
+                "--format",
+                "json",
+                "--outfile",
+                out_path,
+                "--no-summary",
+                "--no-snippets",
             ],
             cwd=root,
             capture_output=True,

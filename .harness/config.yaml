@@ -23,23 +23,23 @@ credentials:
   token_env: "JIRA_API_TOKEN"
 
 scope:
-  # A story that touches one workflow may not edit auth or the mTLS clients.
+  # A story that touches one workflow may not edit the service layer (mTLS
+  # clients, masking) or the harness itself. In your real repo these map to your
+  # top-level packages (workflows/, agents/, tools/, services/api/, auth/, ...).
   allowed:
-    - "workflows/**"
-    - "agents/**"
-    - "tools/**"
+    - "app/workflows/**"
+    - "app/agents/**"
+    - "app/tools/**"
+    - "app/models/**"
     - "prompts/**"
     - "features/**"
   denied:
-    - "auth/**"
-    - "services/api/**"
-    - "services/certificates.py"
-    - "middleware/masking.py"
-    - "prompts/safety-rules.md"
+    - "app/services/**"
     - "function_app.py"
     - "requirements.txt"
     - "harness/**"
     - ".harness/config.yaml"
+    - ".github/**"
 
 read_guard:
   protected:
