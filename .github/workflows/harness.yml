@@ -1,0 +1,73 @@
+# CI runs the SAME harness CLI as Claude Code and Copilot — no rules are
+# re-implemented in YAML. On a PR it prepares the story, checks drift, and runs the
+# full gate (Quality + Scope + Behaviour + Reporting), publishing the report.
+name: harness
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  harness-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history so drift/diff have a base)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install harness + dev tools
+        run: pip install -e ".[dev]"
+
+      - name: Harness self-tests
+        run: pytest -q
+
+      - name: Determine feature branch
+        id: branch
+        run: echo "name=${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Recreate the feature branch ref
+        run: git switch -c "${{ steps.branch.outputs.name }}" || git switch "${{ steps.branch.outputs.name }}" || true
+
+      # Secrets are NOT available to PRs from forks. The harness then falls back to
+      # fixture mode and clearly marks the story source as a fixture.
+      - name: Prepare story context
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: python -m harness prepare --format human || true
+
+      - name: Check Jira drift (blocking on critical/high)
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: python -m harness check-drift --format human
+
+      - name: Gate — Quality + Scope + Behaviour + Reporting
+        env:
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: python -m harness gate --format human | tee gate-report.txt
+
+      - name: Publish report to job summary
+        if: always()
+        run: |
+          {
+            echo '## Harness gate report'
+            echo '```'
+            cat gate-report.txt 2>/dev/null || echo '(no report produced)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload machine-readable acceptance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-report
+          path: .harness/reports/*.json
+          if-no-files-found: ignore
