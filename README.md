@@ -5,9 +5,7 @@ A Python 3.12 port of the agent-independent feature harness, targeting
 tool — **not** shipped inside the agent containers. See
 [`../docs/python-maf-port-plan.md`](../docs/python-maf-port-plan.md) for the full plan.
 
-## Status — Phase 1 + 2 complete
-
-Implemented and tested (45 tests, ruff-clean):
+## Status — Phases 1–3 + 5 complete (57 tests, ruff-clean, GREEN gate)
 
 - **Core:** exit codes, config (PyYAML), branch→key, scope (path-boundary), git
   analyzer (subprocess), credentials (keyring + env fallback).
@@ -17,13 +15,23 @@ Implemented and tested (45 tests, ruff-clean):
 - **Jira:** read-only httpx client + labelled fixtures (offline/CI).
 - **Drift:** structural detector (critical/high/medium/low/none), `critical|high` blocks.
 - **Acceptance logic:** per-AC verdict from evidence, regression detection (AC11/12/13).
-- **CLI (Typer):** `auth jira`, `status`, `prepare`, `story`, `check-drift`,
-  `accept-drift`, plus the Azure-Functions worker guard (`_check_worker`).
+- **Four verification layers** (`verify` / `gate`):
+  - **Quality** — ruff (format+lint), mypy, **import-linter** architecture contracts,
+    and the Azure-Functions worker guard.
+  - **Scope** — every changed path checked against `scope.allowed`/`denied`.
+  - **Behaviour** — a **behave** suite driving the layered `app/` demo, mapped to ACs
+    (passed/failed/pending, cumulative → regressions surface).
+  - **Reporting** — one GREEN/RED verdict.
+- **Adapters:** `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, and
+  Python Claude Code hooks (`session_prepare`, `scope_guard`, `read_guard`,
+  `quality_hook`) + subagents — all thin wrappers over `python -m harness`.
+- **CI:** `.github/workflows/harness.yml` runs the same CLI.
 
-**Next (Phase 3–5):** the four verification layers (`verify`/`gate`) wiring
-ruff/mypy/import-linter + scope + a **behave** behaviour suite driving MAF agents
-(with `LocalEvaluator` tool-call checks as evidence), the Claude/Copilot adapters,
-and CI. Blocked on the MAF rc1 API verification checklist (plan §9).
+**Next — Phase 4 (real MAF wiring):** replace the stub agent in `app/agents/` with a
+MAF `ChatAgent` + `@tool`, and back the behaviour tool-call assertions with MAF
+`LocalEvaluator` (`tool_called_check` / `tool_call_args_match`). This is a contained
+change, **blocked only on the MAF rc1 API verification checklist** (plan §9) — run
+the ~8 `inspect.signature` probes against the installed wheel first.
 
 ## Quick start
 
