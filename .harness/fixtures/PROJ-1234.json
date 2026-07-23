@@ -1,0 +1,37 @@
+{
+  "_fixture": "STAND-IN for the Jira REST /issue/PROJ-1234 response. NOT real Jira data. Offline dev/CI/tests only.",
+  "key": "PROJ-1234",
+  "fields": {
+    "summary": "Kontostand-Abfrage im Chat-Agent",
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Der Chat-Agent soll den Kontostand eines authentifizierten Nutzers abrufen können." }
+          ]
+        }
+      ]
+    },
+    "customfield_10401": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "bulletList",
+          "content": [
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "Ein authentifizierter Nutzer mit Scope invoice:read erhält seinen Kontostand." } ] } ] },
+            { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "IBAN wird in der Antwort maskiert." } ] } ] }
+          ]
+        }
+      ]
+    },
+    "status": { "name": "In Progress" },
+    "priority": { "name": "High" },
+    "labels": ["chat", "billing"],
+    "components": [ { "name": "agent" }, { "name": "workflows" } ],
+    "updated": "2026-07-20T09:00:00.000+0000"
+  }
+}

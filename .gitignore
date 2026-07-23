@@ -1,0 +1,21 @@
+# Secrets — never commit. The Jira token lives in the OS keychain, not here.
+.env
+.env.*
+
+# Local, per-developer harness state. Stories live in Jira; the baseline is a
+# LOCAL snapshot for drift comparison and must NOT enter the develop repo.
+.harness/baseline/
+.harness/runtime/
+.harness/reports/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# nested demo venv
+.venv/

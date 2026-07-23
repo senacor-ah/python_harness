@@ -1,0 +1,37 @@
+# Architecture contracts for the MAF app layers, enforced by import-linter as the
+# Quality-layer "architecture" gate (`lint-imports`). Higher layers may import
+# lower ones, never the reverse. In your real repo, map these to your top-level
+# packages (routes/workflows/agents/tools/services/models) via root_package or
+# root_packages.
+
+[importlinter]
+root_package = app
+
+[importlinter:contract:layering]
+name = Layered architecture (workflows > agents > tools > services > models)
+type = layers
+layers =
+    app.workflows
+    app.agents
+    app.tools
+    app.services
+    app.models
+
+[importlinter:contract:tools-are-leaf-ish]
+name = Tools must not import agents or workflows
+type = forbidden
+source_modules =
+    app.tools
+forbidden_modules =
+    app.agents
+    app.workflows
+
+[importlinter:contract:services-independent]
+name = Services must not import tools/agents/workflows
+type = forbidden
+source_modules =
+    app.services
+forbidden_modules =
+    app.tools
+    app.agents
+    app.workflows

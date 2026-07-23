@@ -1,0 +1,70 @@
+# Harness configuration for a Python + Microsoft Agent Framework (MAF) project.
+# Agent-independent single source of truth. Claude Code, GitHub Copilot and CI all
+# read THIS file through the same CLI. Stories live ONLY in Jira; the baseline is a
+# local, git-ignored snapshot for drift comparison.
+
+version: 1
+
+branch:
+  pattern: "^feature/(?P<ticket>[A-Z][A-Z0-9]+-\\d+)$"
+
+jira:
+  base_url: "https://example.atlassian.net"
+  acceptance_criteria_fields:
+    - customfield_10401
+    - description
+  fixture_mode: true
+  fixtures_dir: ".harness/fixtures"
+
+credentials:
+  service: "harness-jira"
+  token_command: ""
+  email_env: "JIRA_EMAIL"
+  token_env: "JIRA_API_TOKEN"
+
+scope:
+  # A story that touches one workflow may not edit auth or the mTLS clients.
+  allowed:
+    - "workflows/**"
+    - "agents/**"
+    - "tools/**"
+    - "prompts/**"
+    - "features/**"
+  denied:
+    - "auth/**"
+    - "services/api/**"
+    - "services/certificates.py"
+    - "middleware/masking.py"
+    - "prompts/safety-rules.md"
+    - "function_app.py"
+    - "requirements.txt"
+    - "harness/**"
+    - ".harness/config.yaml"
+
+read_guard:
+  protected:
+    - ".env"
+    - "**/*.pfx"
+    - "**/*.pem"
+
+quality:
+  commands:
+    - name: format
+      run: "ruff format --check ."
+    - name: lint
+      run: "ruff check ."
+    - name: types
+      run: "mypy app"
+    - name: architecture
+      run: "lint-imports"
+    - name: functions-worker-guard
+      run: "python -m harness _check_worker"
+
+behaviour:
+  features_dir: "features"
+  steps_dir: "features/steps"
+
+drift:
+  blocking_levels:
+    - critical
+    - high
