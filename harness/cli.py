@@ -275,6 +275,63 @@ def accept_drift(
     )
 
 
+# Scaffold source (inside the installed package) -> destination in the consumer repo.
+_SCAFFOLD = [
+    ("config.yaml", ".harness/config.yaml"),
+    ("importlinter.ini", ".importlinter"),
+    ("AGENTS.md", "AGENTS.md"),
+    ("CLAUDE.md", "CLAUDE.md"),
+    ("github/copilot-instructions.md", ".github/copilot-instructions.md"),
+    ("github/workflows/harness.yml", ".github/workflows/harness.yml"),
+    ("claude/settings.json", ".claude/settings.json"),
+    ("claude/hooks/session_prepare.py", ".claude/hooks/session_prepare.py"),
+    ("claude/hooks/scope_guard.py", ".claude/hooks/scope_guard.py"),
+    ("claude/hooks/read_guard.py", ".claude/hooks/read_guard.py"),
+    ("claude/hooks/quality_hook.py", ".claude/hooks/quality_hook.py"),
+    ("claude/agents/acceptance-reviewer.md", ".claude/agents/acceptance-reviewer.md"),
+    ("claude/agents/change-summarizer.md", ".claude/agents/change-summarizer.md"),
+    ("features/EXAMPLE.feature", "features/EXAMPLE.feature"),
+    ("features/steps/example_steps.py", "features/steps/example_steps.py"),
+]
+
+
+@app.command()
+def init(
+    force: bool = typer.Option(False, "--force", help="Overwrite existing files."),
+    fmt: str = typer.Option("human", "--format"),
+) -> None:
+    """Scaffold the harness config, adapters, hooks and CI into THIS repo.
+
+    Run once per agent repo after `pip install feature-harness`. Existing files are
+    skipped unless --force. Then tailor `.harness/config.yaml` and `.importlinter`
+    to your packages, and add `.harness/baseline/ runtime/ reports/` to .gitignore.
+    """
+    from importlib.resources import files
+
+    scaffold_root = files("harness").joinpath("scaffold")
+    written, skipped = [], []
+    for src_rel, dest_rel in _SCAFFOLD:
+        dest = ROOT / dest_rel
+        if dest.exists() and not force:
+            skipped.append(dest_rel)
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(scaffold_root.joinpath(src_rel).read_bytes())
+        written.append(dest_rel)
+
+    human = (
+        "Scaffolded the harness into this repo.\n"
+        + "\n".join(f"  + {w}" for w in written)
+        + (f"\n  skipped (exists): {', '.join(skipped)}" if skipped else "")
+        + "\n\nNext:\n"
+        "  1. Tailor .harness/config.yaml (jira, scope) and .importlinter to your packages.\n"
+        "  2. Add .harness/baseline/ .harness/runtime/ .harness/reports/ to .gitignore.\n"
+        "  3. Write features/<KEY>.feature per story; delete features/EXAMPLE.*.\n"
+        "  4. Run `harness status` then `harness prepare`."
+    )
+    _emit(fmt, human, {"ok": True, "written": written, "skipped": skipped})
+
+
 def _run_behaviour_layer(cfg: dict, ticket: str, fmt: str):
     """Layer 3: run the behaviour suite and the acceptance worker against the
     baseline story (the agreed contract). Returns the validated report + its path."""

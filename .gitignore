@@ -19,3 +19,7 @@ __pycache__/
 
 # nested demo venv
 .venv/
+
+# build artifacts
+dist/
+build/

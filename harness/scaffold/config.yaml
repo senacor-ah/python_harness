@@ -1,0 +1,73 @@
+# Harness configuration for a Python + Microsoft Agent Framework (MAF) project.
+# Written by `harness init`. Tailor the marked sections to THIS agent's repo, then
+# commit it. Stories live only in Jira; the baseline is a local, git-ignored snapshot.
+
+version: 1
+
+branch:
+  pattern: "^feature/(?P<ticket>[A-Z][A-Z0-9]+-\\d+)$"
+
+jira:
+  # >>> TAILOR: your Atlassian base URL and the custom field(s) holding the ACs.
+  base_url: "https://YOUR-ORG.atlassian.net"
+  acceptance_criteria_fields:
+    - customfield_10401
+    - description
+  # Leave fixture_mode on for offline dev/CI; set false once credentials resolve.
+  fixture_mode: true
+  fixtures_dir: ".harness/fixtures"
+
+credentials:
+  service: "harness-jira"
+  token_command: ""        # optional: a command that prints the token (secret mgr)
+  email_env: "JIRA_EMAIL"
+  token_env: "JIRA_API_TOKEN"
+
+scope:
+  # >>> TAILOR to YOUR top-level packages. A story that touches one workflow must
+  # not be free to edit auth, the mTLS service clients, or masking.
+  allowed:
+    - "workflows/**"
+    - "agents/**"
+    - "tools/**"
+    - "prompts/**"
+    - "features/**"
+  denied:
+    - "auth/**"
+    - "services/api/**"
+    - "services/certificates.py"
+    - "middleware/masking.py"
+    - "prompts/safety-rules.md"
+    - "function_app.py"
+    - "requirements.txt"
+    - ".harness/config.yaml"
+    - ".github/**"
+
+read_guard:
+  protected:
+    - ".env"
+    - "**/*.pfx"
+    - "**/*.pem"
+
+quality:
+  # Deterministic gates; exit 0 = pass. Adjust the targets to your package names.
+  commands:
+    - name: format
+      run: "ruff format --check ."
+    - name: lint
+      run: "ruff check ."
+    - name: types
+      run: "mypy ."            # >>> TAILOR: e.g. `mypy agents tools workflows services`
+    - name: architecture
+      run: "lint-imports"      # reads .importlinter (see the generated template)
+    - name: functions-worker-guard
+      run: "python -m harness _check_worker"
+
+behaviour:
+  features_dir: "features"
+  steps_dir: "features/steps"
+
+drift:
+  blocking_levels:
+    - critical
+    - high

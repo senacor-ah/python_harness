@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(./app/workflows/**)",
+      "Edit(./app/agents/**)",
+      "Edit(./app/tools/**)",
+      "Edit(./app/models/**)",
+      "Edit(./features/**)",
+      "Read(./**)",
+      "Bash(python -m harness:*)"
+    ],
+    "deny": [
+      "Edit(./harness/**)",
+      "Edit(./app/services/**)",
+      "Edit(./.harness/config.yaml)",
+      "Edit(./.github/**)",
+      "Read(./.env)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "python .claude/hooks/session_prepare.py" }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python .claude/hooks/scope_guard.py" }] },
+      { "matcher": "Bash|Read|Grep|Glob", "hooks": [{ "type": "command", "command": "python .claude/hooks/read_guard.py" }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python .claude/hooks/quality_hook.py" }] }
+    ]
+  }
+}
