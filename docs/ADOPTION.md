@@ -1,6 +1,6 @@
 # Adopting the harness in a MAF agent repo
 
-The harness ships as **one shared, pip-installable package** (`feature-harness`).
+The harness ships as **one shared, pip-installable package** (`python_harness`).
 Each agent container repo installs it as a **dev dependency** and keeps only a small
 `.harness/config.yaml` — the business logic (drift, scope, acceptance) lives in the
 package, so you maintain it once for all agents.
@@ -17,15 +17,15 @@ then add it to your dev extras:
 # pyproject.toml of the agent repo
 [project.optional-dependencies]
 dev = [
-    "feature-harness>=1.0",   # internal index, or:
-    # "feature-harness @ git+https://your.git/feature-harness.git@v1.0.0",
+    "python_harness>=1.0",   # internal index, or:
+    # "python_harness @ git+https://your.git/python_harness.git@v1.0.0",
     "ruff>=0.6", "mypy>=1.11", "import-linter>=2", "behave>=1.2.6",
     "pytest>=8",
 ]
 ```
 
 ```bash
-pip install -e ".[dev]"      # or: pip install feature-harness
+pip install -e ".[dev]"      # or: pip install python_harness
 ```
 
 ## 2. Scaffold
@@ -94,6 +94,6 @@ script `scripts/probe_maf.py` (see the port plan §9).
 
 ## Upgrading the harness
 
-Bump the `feature-harness` version in the agent repo's dev extras. Re-run
+Bump the `python_harness` version in the agent repo's dev extras. Re-run
 `harness init --force` only if you want the latest adapter/hook templates (it will
 overwrite them; your `.harness/config.yaml` is yours to keep).

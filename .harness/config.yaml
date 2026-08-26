@@ -9,11 +9,11 @@ branch:
   pattern: "^feature/(?P<ticket>[A-Z][A-Z0-9]+-\\d+)$"
 
 jira:
-  base_url: "https://example.atlassian.net"
+  base_url: "https://senacor-ah-test.atlassian.net"
   acceptance_criteria_fields:
     - customfield_10401
     - description
-  fixture_mode: true
+  fixture_mode: false
   fixtures_dir: ".harness/fixtures"
 
 credentials:

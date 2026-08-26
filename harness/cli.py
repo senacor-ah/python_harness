@@ -302,7 +302,7 @@ def init(
 ) -> None:
     """Scaffold the harness config, adapters, hooks and CI into THIS repo.
 
-    Run once per agent repo after `pip install feature-harness`. Existing files are
+    Run once per agent repo after `pip install python_harness`. Existing files are
     skipped unless --force. Then tailor `.harness/config.yaml` and `.importlinter`
     to your packages, and add `.harness/baseline/ runtime/ reports/` to .gitignore.
     """

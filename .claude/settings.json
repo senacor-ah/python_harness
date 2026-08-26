@@ -19,14 +19,14 @@
   },
   "hooks": {
     "SessionStart": [
-      { "hooks": [{ "type": "command", "command": "python .claude/hooks/session_prepare.py" }] }
+      { "hooks": [{ "type": "command", "command": "python3 .claude/hooks/session_prepare.py" }] }
     ],
     "PreToolUse": [
-      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python .claude/hooks/scope_guard.py" }] },
-      { "matcher": "Bash|Read|Grep|Glob", "hooks": [{ "type": "command", "command": "python .claude/hooks/read_guard.py" }] }
+      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python3 .claude/hooks/scope_guard.py" }] },
+      { "matcher": "Bash|Read|Grep|Glob", "hooks": [{ "type": "command", "command": "python3 .claude/hooks/read_guard.py" }] }
     ],
     "PostToolUse": [
-      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python .claude/hooks/quality_hook.py" }] }
+      { "matcher": "Edit|Write", "hooks": [{ "type": "command", "command": "python3 .claude/hooks/quality_hook.py" }] }
     ]
   }
 }

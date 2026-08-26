@@ -1,5 +1,5 @@
 [project]
-name = "feature-harness"
+name = "python_harness"
 version = "1.0.0"
 description = "Agent-independent feature harness (Jira drift + evidence-based acceptance) for Python + Microsoft Agent Framework projects."
 requires-python = ">=3.12"
