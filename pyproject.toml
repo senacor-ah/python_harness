@@ -19,6 +19,7 @@ dev = [
     "mypy>=1.11",
     "import-linter>=2",
     "behave>=1.2.6",
+    "build>=1",
 ]
 
 [project.scripts]

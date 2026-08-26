@@ -10,23 +10,38 @@ package, so you maintain it once for all agents.
 
 ## 1. Install (per agent repo)
 
-Publish the wheel to your internal index (or reference it as a git dependency),
-then add it to your dev extras:
+The harness lives in **`senacor-ah/python_harness`** (private). Releases are tagged
+`v<version>`; the `release` workflow attaches the wheel and sdist to a GitHub Release.
+There is no PyPI index — GitHub Packages has no Python registry — so pin a **git tag**:
 
 ```toml
 # pyproject.toml of the agent repo
 [project.optional-dependencies]
 dev = [
-    "python_harness>=1.0",   # internal index, or:
-    # "python_harness @ git+https://your.git/python_harness.git@v1.0.0",
+    "python_harness @ git+ssh://git@github.com/senacor-ah/python_harness.git@v1.0.0",
     "ruff>=0.6", "mypy>=1.11", "import-linter>=2", "behave>=1.2.6",
     "pytest>=8",
 ]
 ```
 
 ```bash
-pip install -e ".[dev]"      # or: pip install python_harness
+pip install -e ".[dev]"
 ```
+
+In CI (and anywhere without an SSH key) use HTTPS with a token that can read the
+repo, or install the released wheel directly:
+
+```bash
+pip install "python_harness @ git+https://${GH_TOKEN}@github.com/senacor-ah/python_harness.git@v1.0.0"
+
+# or, from the GitHub Release assets:
+gh release download v1.0.0 --repo senacor-ah/python_harness --pattern '*.whl'
+pip install python_harness-1.0.0-py3-none-any.whl
+```
+
+> Both consumers and CI need read access to the private repo. If that becomes
+> awkward across many agent repos, move to a real index (Azure Artifacts) and add a
+> `twine upload` step to `.github/workflows/release.yml` — the rest stays the same.
 
 ## 2. Scaffold
 
@@ -94,6 +109,23 @@ script `scripts/probe_maf.py` (see the port plan §9).
 
 ## Upgrading the harness
 
-Bump the `python_harness` version in the agent repo's dev extras. Re-run
-`harness init --force` only if you want the latest adapter/hook templates (it will
-overwrite them; your `.harness/config.yaml` is yours to keep).
+Bump the pinned tag in the agent repo's dev extras. Re-run `harness init --force`
+only if you want the latest adapter/hook templates (it will overwrite them; your
+`.harness/config.yaml` is yours to keep).
+
+## Cutting a release (maintainers)
+
+The version is single-sourced in `pyproject.toml`; the tag must match it, and the
+release workflow fails the build if it doesn't.
+
+```bash
+# 1. bump `version` in pyproject.toml, commit
+# 2. tag and push — this triggers .github/workflows/release.yml
+git tag v1.1.0 && git push origin v1.1.0
+```
+
+The workflow builds sdist + wheel, then **proves the wheel is usable** before
+publishing: it asserts the 15 scaffold templates are inside the wheel and that the
+demo `app/` did not leak in, installs the wheel into a throwaway repo, and runs
+`harness init` + `harness status` there. Only then does it create the GitHub Release
+with both artifacts attached. A wheel that cannot scaffold never reaches a consumer.

@@ -13,7 +13,6 @@
       "Edit(./harness/**)",
       "Edit(./app/services/**)",
       "Edit(./.harness/config.yaml)",
-      "Edit(./.github/**)",
       "Read(./.env)"
     ]
   },
